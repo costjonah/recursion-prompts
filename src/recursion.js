@@ -480,6 +480,9 @@ var flatten = function(array) {
 // 31. Given a string, return an object containing tallies of each letter.
 // letterTally('potato'); // {p:1, o:2, t:2, a:1}
 var letterTally = function(str, obj) {
+  if (obj === undefined) {
+    obj = {};
+  }
   if (str.length === 0) {
     return obj;
   }
@@ -497,19 +500,50 @@ var letterTally = function(str, obj) {
 // compress([1,2,2,3,4,4,5,5,5]) // [1,2,3,4,5]
 // compress([1,2,2,3,4,4,2,5,5,5,4,4]) // [1,2,3,4,2,5,4]
 var compress = function(list) {
-
+  if (list.length <= 1) {
+    return list;
+  }
+  if (list[0] === list[1]) {
+    return compress(list.slice(1));
+  } else {
+    return [list[0]].concat(compress(list.slice(1)));
+  }
 };
 
 // 33. Augment every element in a list with a new value where each element is an array
 // itself.
 // augmentElements([[],[3],[7]], 5); // [[5],[3,5],[7,5]]
 var augmentElements = function(array, aug) {
+  var augmented = [];
+  if (aug === undefined) {
+    return array;
+  }
+  if (array.length === 0) {
+    return augmented;
+  }
+  if (Array.isArray(array[0])) {
+    augmented.push(array[0]);
+    augmented[0].push(aug);
+  }
+  return augmented.concat(augmentElements(array.slice(1), aug));
 };
 
 // 34. Reduce a series of zeroes to a single 0.
 // minimizeZeroes([2,0,0,0,1,4]) // [2,0,1,4]
 // minimizeZeroes([2,0,0,0,1,0,0,4]) // [2,0,1,0,4]
 var minimizeZeroes = function(array) {
+  var reduced = [];
+  if (array.length === 0) {
+    return reduced;
+  }
+  if (array[0] !== 0) {
+    reduced.push(array[0]);
+  }
+  if (array[0] === 0 && array[1] !== 0) {
+    reduced.push(array[0]);
+    return reduced.concat(minimizeZeroes(array.slice(1)));
+  }
+  return reduced.concat(minimizeZeroes(array.slice(1)));
 };
 
 // 35. Alternate the numbers in an array between positive and negative regardless of
@@ -517,32 +551,130 @@ var minimizeZeroes = function(array) {
 // alternateSign([2,7,8,3,1,4]) // [2,-7,8,-3,1,-4]
 // alternateSign([-2,-7,8,3,-1,4]) // [2,-7,8,-3,1,-4]
 var alternateSign = function(array) {
+  var alternated = [];
+  if (array.length === 0) {
+    return alternated;
+  }
+  for (var i = 0; i < array.length; i++) {
+    array[i] = Math.abs(array[i]);
+  }
+  alternated.push(array[0], (array[1] * -1));
+  return alternated.concat(alternateSign(array.slice(2)));
 };
 
 // 36. Given a string, return a string with digits converted to their word equivalent.
 // Assume all numbers are single digits (less than 10).
 // numToText("I have 5 dogs and 6 ponies"); // "I have five dogs and six ponies"
 var numToText = function(str) {
+  var convert = {
+    1: 'one',
+    2: 'two',
+    3: 'three',
+    4: 'four',
+    5: 'five',
+    6: 'six',
+    7: 'seven',
+    8: 'eight',
+    9: 'nine'
+  };
+  if (str.length === 0) {
+    return '';
+  }
+  if (convert[str[0]]) {
+    return convert[str[0]] + numToText(str.slice(1));
+  }
+  return str[0] + numToText(str.slice(1));
 };
 
 
 // *** EXTRA CREDIT ***
 
 // 37. Return the number of times a tag occurs in the DOM.
-var tagCount = function(tag, node) {
+//input: string (tag), undefined or object (node)
+//output: number of times tag occurs
+var tagCount = function(tag, node = document.body.childNodes) {
+  var count = 0;
+  if (node === document.body.childNodes) {
+    var arr = [];
+    node = Array.from(document.body.childNodes);
+    for (var x = 0; x < node.length; x++) {
+      if (node[x].tagName !== undefined) {
+        arr.push(node[x]);
+      }
+    }
+    node = arr[0];
+    tagCount(tag, node);
+  }
+  var nodeTags = function(tag, node) {
+  if (node.tagName.toLowerCase() === tag) {
+    count++;
+  }
+  if (node.hasChildNodes()) {
+    var children = Array.from(node.childNodes);
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].tagName !== undefined) {
+        nodeTags(tag, node = children[i]);
+      }
+    }
+  };
 };
+  nodeTags(tag, node);
+  return count;
+};
+
+// iterative solution
+  // var count = 0;
+  // if (!node) {
+  //   node = document.body;
+  //   var tagString = node.outerHTML;
+  //   tagString = tagString.split('</' + tag + '>').join('');
+  //   tagString = tagString.split('<');
+  //   for (var j = 0; j < tagString.length; j++) {
+  //     if (tagString[j].includes(tag + '>') || tagString[j].includes(tag + ' ')) {
+  //       count++
+  //     }
+  //   }
+  // }
+  // return count;
+
 
 // 38. Write a function for binary search.
 // var array = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
 // binarySearch(array, 5) // 5
 // https://www.khanacademy.org/computing/computer-science/algorithms/binary-search/a/binary-search
 var binarySearch = function(array, target, min, max) {
+  if (array.length === 0) {
+    return null;
+  }
+
+  if (min === undefined) {
+    min = 0;
+  }
+
+  if (max === undefined) {
+    max = array.length - 1;
+  }
+
+  var mid = Math.floor((max - min) / 2) + min;
+
+  if (min > max) {
+    return null;
+  }
+
+  if (array[mid] < target) {
+    return binarySearch(array, target, mid + 1, max);
+  } else if (array[mid] > target) {
+    return binarySearch(array, target, min, mid - 1);
+  } else {
+    return mid;
+  }
 };
 
 // 39. Write a merge sort function.
 // mergeSort([34,7,23,32,5,62]) // [5,7,23,32,34,62]
 // https://www.khanacademy.org/computing/computer-science/algorithms/merge-sort/a/divide-and-conquer-algorithms
 var mergeSort = function(array) {
+
 };
 
 // 40. Deeply clone objects and arrays.
@@ -551,4 +683,32 @@ var mergeSort = function(array) {
 // console.log(obj2); // {a:1,b:{bb:{bbb:2}},c:3}
 // obj1 === obj2 // false
 var clone = function(input) {
+  var container;
+  if (!Array.isArray(input)) {
+    container = {};
+    for (var key in input) {
+      if (input[key] instanceof Object) {
+        container[key] = clone(input[key]);
+      } else {
+        container[key] = input[key];
+      }
+    }
+  } else {
+    container = [];
+    if (input.length === 0) {
+      return container;
+    }
+    for (var i = 0; i < input.length; i++) {
+      if (input[i] instanceof Object) {
+        container.push(clone(input[i]));
+      } else {
+        container.push(input[i]);
+      }
+    }
+  }
+  return container;
 };
+
+
+
+
